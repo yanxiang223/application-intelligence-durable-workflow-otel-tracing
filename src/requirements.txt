@@ -1,0 +1,24 @@
+# Python dependencies for FunctionGraph step functions
+# =====================================================
+#
+# IMPORTANT: This file intentionally does NOT include any third-party cloud-vendor packages.
+# All orchestration SDK and boto3 dependencies have been removed.
+#
+# These dependencies are used by all step functions:
+#   - extract-text
+#   - summarize
+#   - human-review
+#   - publish
+#   - workflow-trigger
+#
+# IMPORTANT: Pin versions for production. These are development pins.
+#
+# OpenTelemetry SDK — standard, vendor-neutral (replaces ADOT FunctionGraph Layer + OtelPlugin)
+opentelemetry-api>=1.25.0
+opentelemetry-sdk>=1.25.0
+opentelemetry-exporter-otlp>=1.25.0
+opentelemetry-instrumentation-logging>=0.46b0
+
+# OBS SDK — for object storage access (if functions need to read/write OBS)
+# Note: Use obs-python-sdk >= 3.0.0 for Python 3.11+ compatibility
+# obs-python-sdk>=3.0.3

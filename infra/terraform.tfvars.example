@@ -1,0 +1,32 @@
+# terraform.tfvars.example
+# ==========================
+# Copy this file to terraform.tfvars and fill in your values.
+# IMPORTANT: Never commit terraform.tfvars to version control.
+#
+# Get your Access Key from: https://console-intl.myhuaweicloud.com/iam/
+#
+
+hw_access_key = "<YOUR_HW_ACCESS_KEY>"
+hw_secret_key = "<YOUR_HW_SECRET_KEY>"
+hw_region     = "cn-north-4"
+
+# OBS bucket name (must be globally unique)
+bucket_name = "durable-workflow-docs-<your-name>-cn-north-4"
+
+# FunctionGraph workspace
+workspace = "default"
+
+# Optional: OTLP endpoint override
+# Leave empty to use the default cn-north-4 tracing endpoint
+# otel_endpoint = "https://tracing.cn-north-4.myhuaweicloud.com"
+
+# Function resource sizing
+function_timeout    = 60
+function_memory_size = 512
+
+# Resource tags
+tags = {
+  project     = "durable-workflow-otel"
+  environment = "demo"
+  owner       = "<your-name>"
+}

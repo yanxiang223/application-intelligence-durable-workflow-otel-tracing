@@ -1,0 +1,19 @@
+# Terraform state and plan files
+terraform.tfstate
+terraform.tfstate.d/
+terraform.tfstate.backup
+*.tfplan
+
+# Terraform .tfvars (contains credentials)
+# NOTE: terraform.tfvars.example is committed; terraform.tfvars is not
+terraform.tfvars
+
+# Provider lock file (optional, can be committed)
+# .terraform.lock.hcl
+
+# Provider plugins (downloaded on terraform init)
+.terraform/
+.terraformrc
+
+# Backup files
+*.bak

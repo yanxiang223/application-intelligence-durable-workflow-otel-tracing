@@ -1,0 +1,139 @@
+"""
+durable_workflow.yaml
+====================
+FunctionGraph workflow definition for the document-review workflow.
+
+This implements a durable workflow using FunctionGraph's native workflow capabilities.
+The workflow orchestrates four step functions using FunctionGraph's native YAML DSL.
+
+Key design points:
+  - Uses a YAML state machine definition for orchestration
+  - 'Wait' state type handles callback-based suspension
+  - Each step is a separate FunctionGraph function invocation
+  - Workflow execution ID serves as the unified trace ID
+  - No replay semantics — completed steps are never re-executed in a new invocation
+
+Workflow steps:
+  1. extract_text  -> Extract text from document
+  2. summarize     -> Summarize extracted text
+  3. human_review  -> Wait for human approval callback
+  4. publish       -> Publish if approved
+
+Usage:
+  Deploy via Terraform (huaweicloud_fgs_workflow resource).
+  The workflow definition is embedded in the Terraform resource.
+
+References:
+  FunctionGraph workflow DSL:
+    https://console-intl.myhuaweicloud.com/apig/
+"""
+
+# NOTE: This YAML is embedded in infra/main.tf as part of the
+# huaweicloud_fgs_workflow resource definition.
+# The actual YAML must be embedded as a heredoc in the Terraform file
+# because FunctionGraph workflow import expects a JSON/UTF-8 payload.
+
+# ─────────────────────────────────────────────────────────────────
+# WORKFLOW SCHEMA (embedded in Terraform)
+# ─────────────────────────────────────────────────────────────────
+#
+# The FunctionGraph workflow definition (YAML) embedded in Terraform:
+#
+# workflow_definition: |
+#   workflow:
+#     name: durable-workflow-sample
+#     runtime: python3.11
+#
+#   start_state: extract_text
+#
+#   states:
+#     extract_text:
+#       type: Pass
+#       state_message: "Extracting text from document"
+#       inputBindings:
+#         doc_id: $.doc_id
+#         workflow_execution_id: $.workflow_execution_id
+#       next_state: summarize
+#
+#     summarize:
+#       type: Pass
+#       state_message: "Summarizing document content"
+#       inputBindings:
+#         doc_id: $.doc_id
+#         text: $.text
+#         workflow_execution_id: $.workflow_execution_id
+#       next_state: human_review
+#
+#     human_review:
+#       type: Wait
+#       wait_type: callback
+#       state_message: "Waiting for human approval"
+#       inputBindings:
+#         doc_id: $.doc_id
+#         summary: $.summary
+#         workflow_execution_id: $.workflow_execution_id
+#       next_state: check_approval
+#
+#     check_approval:
+#       type: Choice
+#       choices:
+#         - condition: "$.approval.approved == true"
+#           next_state: publish
+#       default_state: rejected
+#
+#     publish:
+#       type: Pass
+#       state_message: "Publishing approved summary"
+#       inputBindings:
+#         doc_id: $.doc_id
+#         summary: $.summary
+#         approval: $.approval
+#         workflow_execution_id: $.workflow_execution_id
+#       end: true
+#
+#     rejected:
+#       type: Pass
+#       state_message: "Publishing rejected by reviewer"
+#       inputBindings:
+#         doc_id: $.doc_id
+#         approval: $.approval
+#         workflow_execution_id: $.workflow_execution_id
+#       end: true
+#
+# ─────────────────────────────────────────────────────────────────
+
+"""
+Implementation Notes
+====================
+
+This workflow is implemented entirely on FunctionGraph using its native
+workflow DSL (YAML state machine). Key design points:
+
+1. Replay semantics:
+   - Each step is a separate FunctionGraph function invocation. The workflow
+     engine manages state and never re-invokes a completed step.
+
+2. Callback mechanism:
+   - The 'Wait' state with callback_type suspends the execution; the external
+     reviewer POSTs to the workflow callback URI provided by the engine.
+
+3. Trace ID derivation:
+   - The workflow_execution_id is used as the unified trace ID and propagated
+     through the event chain; trace context uses the W3C 'traceparent' header.
+
+4. SDK vs YAML:
+   - Orchestration is expressed as a YAML state machine; step functions are
+     plain Python. No third-party orchestration SDK is required.
+
+Tracing:
+-------
+  Traces are exported via the OpenTelemetry OTLP exporter to Huawei Cloud
+  Distributed Tracing (OTLP-compatible):
+
+    https://tracing.{region}.myhuaweicloud.com
+
+  Trace context is propagated via the W3C 'traceparent' header in HTTP calls.
+  Each step function initializes its own TracerProvider and creates spans.
+  The workflow_execution_id is passed through the event chain to correlate
+  all spans.
+"""

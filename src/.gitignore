@@ -1,0 +1,35 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
+*.whl
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Terraform
+# (these are in infra/ but listed here for convenience)
+terraform.tfstate
+terraform.tfstate.d/
+.terraform/
+*.tfvars
+
+# Local testing
+test_*.py
+*.log
+
+# OBS credentials (if using local .obs_credentials file)
+.obs_credentials
